@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CampusConnect</title>
+<style>
+:root{--bg:#f5f6fb;--card:#fff;--ink:#12183a;--mut:#5d6488;--line:#e3e5f0;--navy:#12204f;--vio:#6d4aff;--vio2:#ece8ff;--g:#1a9d62;--y:#c9a000;--o:#e0731a;--r:#d33a4a;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0b1024;--card:#141b3a;--ink:#eef0ff;--mut:#9aa2cf;--line:#262e57;--vio:#9a82ff;--vio2:#241f4d;--g:#3ccf8b;--y:#e8c23a;--o:#ff9a4d;--r:#ff6677}}
+:root[data-theme="dark"]{--bg:#0b1024;--card:#141b3a;--ink:#eef0ff;--mut:#9aa2cf;--line:#262e57;--vio:#9a82ff;--vio2:#241f4d;--g:#3ccf8b;--y:#e8c23a;--o:#ff9a4d;--r:#ff6677}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 "Segoe UI",system-ui,sans-serif}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--vio);outline-offset:2px}
+#app{display:flex;min-height:100vh}
+nav.side{width:210px;background:var(--navy);color:#fff;padding:18px 12px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:4px;transition:width .2s}
+nav.side.min{width:64px}nav.side.min span.t{display:none}
+.logo{font-weight:800;font-size:18px;padding:6px 10px 14px;letter-spacing:-.3px}
+nav button{background:none;border:0;color:#c7cdf5;text-align:left;padding:10px;border-radius:10px;cursor:pointer;display:flex;gap:10px;align-items:center}
+nav button.on,nav button:hover{background:rgba(154,130,255,.25);color:#fff}
+main{flex:1;padding:24px;max-width:1000px;margin:0 auto;width:100%;min-width:0}
+h1{font-size:24px;margin:0 0 4px;letter-spacing:-.4px}h2{font-size:17px;margin:0 0 10px}
+.sub{color:var(--mut);margin:0 0 18px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:14px}
+.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.sp{justify-content:space-between}
+.btn{background:var(--vio);color:#fff;border:0;border-radius:10px;padding:8px 14px;cursor:pointer;font-weight:600}
+.btn.alt{background:var(--vio2);color:var(--vio)}.btn.sm{padding:4px 10px;font-size:13px}.btn.bad{background:none;color:var(--r);border:1px solid var(--r)}
+input,select{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:8px 10px;width:100%}
+label{font-size:13px;color:var(--mut);display:block}.f{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));margin:10px 0}
+.bar{height:10px;background:var(--line);border-radius:6px;position:relative;margin:8px 0}
+.bar i{display:block;height:100%;border-radius:6px}.bar b{position:absolute;top:-3px;width:2px;height:16px;background:var(--ink)}
+.pill{padding:2px 10px;border-radius:99px;font-size:12px;font-weight:700;color:#fff}
+.green{background:var(--g)}.yellow{background:var(--y)}.orange{background:var(--o)}.red{background:var(--r)}
+.big{font-size:34px;font-weight:800;letter-spacing:-1px}
+.mut{color:var(--mut);font-size:13px}.note{font-size:12px;color:var(--mut);border-left:3px solid var(--vio);padding-left:8px;margin-top:8px}
+.al{padding:8px 12px;border-radius:10px;margin-bottom:6px;border-left:4px solid;background:var(--bg)}
+.al.red{border-color:var(--r)}.al.orange{border-color:var(--o)}.al.yellow{border-color:var(--y)}.al.green{border-color:var(--g)}
+.empty{text-align:center;color:var(--mut);padding:24px}
+.top{display:flex;justify-content:flex-end;gap:8px;margin-bottom:8px}
+#toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;padding:8px 16px;border-radius:10px;display:none;z-index:9}
+.err{color:var(--r);font-size:13px}
+@media(max-width:720px){nav.side{position:fixed;bottom:0;top:auto;left:0;right:0;width:100%;height:auto;flex-direction:row;justify-content:space-around;z-index:5;padding:6px 4px calc(6px + env(safe-area-inset-bottom,0px))}
+nav.side.min{width:100%}.logo,#col{display:none}nav button{flex-direction:column;gap:0;font-size:11px;padding:6px 8px}nav.side span.t{display:inline!important}main{padding:16px 14px 90px}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style></head><body>
+<div id="app"><nav class="side" id="nav" aria-label="Main"></nav><main id="main"></main></div><div id="toast" role="status"></div>
+<script>
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const uid=()=>Math.random().toString(36).slice(2,9);
+const today=()=>new Date().toISOString().slice(0,10);
+let S;
+function load(){try{S=JSON.parse(localStorage.getItem('cc')||'null')}catch(e){S=null}
+ if(!S)S={subjects:[],tt:[],tasks:[],log:{},policy:{overall:75,mode:'subject',yellow:3,orange:1,stale:7},theme:'',min:false}}
+function save(){try{localStorage.setItem('cc',JSON.stringify(S))}catch(e){toast('Could not save: browser storage is unavailable.')}}
+function toast(m){const t=$('#toast');t.textContent=m;t.style.display='block';clearTimeout(toast.t);toast.t=setTimeout(()=>t.style.display='none',2600)}
+
+/* ---- calculation engine (pure) ---- */
+function calc(A,T,p){ // p = target in whole/decimal percent
+ A=+A;T=+T;p=+p;
+ if(!(T>=0)||!(A>=0)||A>T||!(p>=0&&p<=100))return{error:'Attended must be between 0 and total classes, and target between 0 and 100.'};
+ const pct=T===0?null:A/T*100;
+ let need=0;
+ if(T===0)need=p>0?0:0;
+ else if(A*100>=p*T-1e-9)need=0;
+ else if(p>=100)need=Infinity;
+ else need=Math.ceil((p*T-100*A)/(100-p)-1e-9);
+ let canMiss=0;
+ if(p<=0)canMiss=Infinity;else if(T>0&&A*100>=p*T-1e-9)canMiss=Math.max(0,Math.floor(A*100/p+1e-9-T));
+ return{pct,need,canMiss,met:T===0?null:A*100>=p*T-1e-9}}
+const after=(A,T,att,miss)=>{const t=T+att+miss;return t?(A+att)/t*100:null};
+const fmt=v=>v==null?'—':(Math.round(v*100)/100)+'%';
+function level(s){const c=calc(s.att,s.tot,s.target);if(c.error)return{c,lv:'red'};
+ if(c.met===null)return{c,lv:'green',none:true};
+ if(!c.met)return{c,lv:'red'};
+ if(c.canMiss<=S.policy.orange)return{c,lv:'orange'};
+ if(c.canMiss<=S.policy.yellow)return{c,lv:'yellow'};
+ return{c,lv:'green'}}
+const LB={green:'On track',yellow:'Approaching limit',orange:'Little room',red:'Below target'};
+function alerts(){const out=[];
+ S.subjects.forEach(s=>{const{c,lv,none}=level(s);if(c.error||none){if(none)out.push({lv:'yellow',m:`${s.name}: no classes recorded yet.`});return}
+  const nm=esc(s.name),p=fmt(c.pct);
+  if(lv==='red')out.push({lv,m:`${nm} is at ${p}, below your ${s.target}% target. ${c.need===Infinity?'A 100% target cannot be reached again after an absence.':`Attend your next ${c.need} classes in a row to reach it.`}`});
+  else if(lv==='orange')out.push({lv,m:`${nm} is at ${p}. ${c.canMiss===0?'Missing your next class would drop you below '+s.target+'%.':'Only '+c.canMiss+' absence left before dropping below '+s.target+'%.'}`});
+  else if(lv==='yellow')out.push({lv,m:`${nm} is at ${p}. You have ${c.canMiss} permissible absences remaining.`});
+  const days=(Date.now()-(s.updated||0))/864e5;if(days>S.policy.stale)out.push({lv:'yellow',m:`${nm} has not been updated in ${Math.floor(days)} days.`})});
+ return out.sort((a,b)=>['red','orange','yellow','green'].indexOf(a.lv)-['red','orange','yellow','green'].indexOf(b.lv))}
+
+/* ---- views ---- */
+let view='dash',editId=null,sel=null;
+const NAV=[['dash','▦','Home'],['subjects','✓','Attendance'],['tt','▤','Timetable'],['tasks','☑','Deadlines'],['settings','⚙','Settings']];
+function drawNav(){const n=$('#nav');n.className='side'+(S.min?' min':'');
+ n.innerHTML='<div class="logo">Campus<span style="color:#9a82ff">Connect</span></div>'+NAV.map(([k,i,t])=>`<button data-v="${k}" class="${view===k?'on':''}" aria-label="${t}"><span>${i}</span><span class="t">${t}</span></button>`).join('')+'<button id="col" style="margin-top:auto"><span>⇔</span><span class="t">Collapse</span></button>';
+ n.querySelectorAll('[data-v]').forEach(b=>b.onclick=()=>{view=b.dataset.v;editId=null;render()});
+ $('#col').onclick=()=>{S.min=!S.min;save();drawNav()}}
+function render(){document.documentElement.dataset.theme=S.theme;drawNav();$('#main').innerHTML=({dash,subjects,tt,tasks,settings})[view]();bind()}
+
+function card(s){const{c,lv,none}=level(s);const w=c.pct==null?0:Math.min(100,c.pct);
+ return `<div class="card"><div class="row sp"><div><b>${esc(s.name)}</b> <span class="mut">${esc(s.code)}</span></div><span class="pill ${lv}">${none?'No data':LB[lv]}</span></div>
+ <div class="big">${c.error?'—':fmt(c.pct)}</div><div class="bar" title="Target ${s.target}%"><i class="${lv}" style="width:${w}%"></i><b style="left:${s.target}%"></b></div>
+ <div class="mut">${s.att}/${s.tot} attended · target ${s.target}%${c.error||none?'':c.met?` · can miss <b>${c.canMiss===Infinity?'any':c.canMiss}</b> more`:` · need <b>${c.need===Infinity?'impossible':c.need}</b> in a row`}</div></div>`}
+
+function dash(){const al=alerts();const tot=S.subjects.reduce((a,s)=>a+ +s.tot,0),att=S.subjects.reduce((a,s)=>a+ +s.att,0);
+ const ov=tot?att/tot*100:null,d=new Date().getDay();const tc=S.tt.filter(e=>e.day===d).sort((a,b)=>a.start.localeCompare(b.start));
+ const up=S.tasks.filter(t=>!t.done).sort((a,b)=>a.due.localeCompare(b.due)).slice(0,4);
+ if(!S.subjects.length)return `<h1>Welcome to CampusConnect</h1><p class="sub">Track attendance, plan absences and never get surprised by a shortage.</p><div class="card empty"><p>No subjects yet. Add your first subject, or load sample data to explore.</p><div class="row" style="justify-content:center"><button class="btn" data-go="subjects">Add a subject</button><button class="btn alt" id="demo">Load demo data</button></div></div>`;
+ const ovT=S.policy.overall;
+ return `<h1>Your semester at a glance</h1><p class="sub">Overall attendance ${fmt(ov)} · policy: ${ovT}% ${S.policy.mode==='overall'?'overall':S.policy.mode==='both'?'overall and per subject':'per subject'}</p>
+ <div class="card"><h2>Alerts</h2>${al.length?al.map(a=>`<div class="al ${a.lv}">${a.m}</div>`).join(''):'<div class="al green">All subjects are comfortably above target.</div>'}<div class="note">Projections are maths based on your entries, not official university decisions. Check your institution's rules.</div></div>
+ <div class="grid">${S.subjects.map(card).join('')}</div>
+ <div class="grid"><div class="card"><h2>Today · ${DAYS[d]}</h2>${tc.length?tc.map(e=>classRow(e,today())).join(''):'<div class="empty">No classes today.</div>'}</div>
+ <div class="card"><h2>Upcoming deadlines</h2>${up.length?up.map(t=>`<div class="row sp"><span>${esc(t.title)}</span><span class="mut">${esc(t.due)}</span></div>`).join(''):'<div class="empty">Nothing due.</div>'}</div></div>`}
+
+function classRow(e,date){const s=S.subjects.find(x=>x.id===e.subj);if(!s)return'';const st=S.log[e.id+date]||'';
+ return `<div class="row sp" style="margin-bottom:8px"><div>${esc(s.name)}<div class="mut">${e.start}–${e.end} ${esc(e.room)}</div></div><div class="row">${[['a','Present'],['m','Absent'],['c','Cancelled']].map(([k,l])=>`<button class="btn sm ${st===k?'':'alt'}" data-mark="${e.id}|${date}|${k}">${l}</button>`).join('')}</div></div>`}
+
+function subjects(){
+ const s=S.subjects.find(x=>x.id===editId)||{};const open=editId!==null;
+ const form=open?`<div class="card"><h2>${s.id?'Edit':'Add'} subject</h2><div class="f">
+ <div><label>Name</label><input id="f_name" value="${esc(s.name)}"></div><div><label>Code</label><input id="f_code" value="${esc(s.code)}"></div>
+ <div><label>Faculty (optional)</label><input id="f_fac" value="${esc(s.faculty)}"></div><div><label>Classes attended</label><input id="f_att" type="number" min="0" value="${s.att??0}"></div>
+ <div><label>Total conducted</label><input id="f_tot" type="number" min="0" value="${s.tot??0}"></div><div><label>Target %</label><input id="f_tg" type="number" min="0" max="100" value="${s.target??S.policy.overall}"></div>
+ <div><label>Credits</label><input id="f_cr" type="number" min="0" value="${s.credits??''}"></div></div><div id="ferr" class="err"></div>
+ <div class="row"><button class="btn" id="fsave">Save subject</button><button class="btn alt" id="fcancel">Cancel</button></div></div>`:'';
+ return `<div class="row sp"><div><h1>Attendance</h1><p class="sub">Tap a subject to forecast and simulate.</p></div><div class="row"><button class="btn" id="add">Add subject</button><button class="btn alt" id="exp">Export CSV</button><button class="btn alt" id="imp">Import CSV</button><input type="file" id="file" accept=".csv" hidden></div></div>${form}
+ ${S.subjects.length?S.subjects.map(x=>`<div data-sel="${x.id}" style="cursor:pointer">${card(x)}</div>${sel===x.id?forecast(x):''}`).join(''):'<div class="card empty">No subjects yet. Add one to start tracking.</div>'}`}
+
+function forecast(s){const{c}=level(s);if(c.error)return`<div class="card err">${c.error}</div>`;
+ const m=+(s.sim?.m||0),a=+(s.sim?.a||0);const r=after(+s.att,+s.tot,a,m);
+ const wk=S.tt.filter(e=>e.subj===s.id).length;
+ let plan='';if(c.met===false&&c.need!==Infinity){plan=wk?`<div class="note">Recovery plan: ${c.need} consecutive classes is about ${Math.ceil(c.need/wk)} week(s) at your ${wk} weekly session(s), if every class is held and you attend all of them.</div>`:`<div class="note">Recovery plan: add this subject to your timetable to estimate how many weeks ${c.need} classes will take.</div>`}
+ return `<div class="card" style="border-color:var(--vio)"><h2>Forecast · ${esc(s.name)}</h2><div class="row"><div style="flex:1;min-width:140px"><label>Needed in a row</label><div class="big">${c.met?0:c.need===Infinity?'n/a':c.need}</div></div><div style="flex:1;min-width:140px"><label>Can still miss</label><div class="big">${c.met===null?'—':c.met?(c.canMiss===Infinity?'∞':c.canMiss):0}</div></div></div>
+ <div class="f"><div><label>If I miss next (classes)</label><input type="number" min="0" id="sm" value="${m}"></div><div><label>If I attend next (classes)</label><input type="number" min="0" id="sa" value="${a}"></div></div>
+ <div>Projected attendance: <b>${fmt(r)}</b> ${r!=null&&r>=s.target?'(at or above target)':'(below target)'}</div>${plan}
+ <div class="note">Assumes every future class is held and counted. Your university's final decision may differ.</div>
+ <div class="row" style="margin-top:10px"><button class="btn alt sm" data-edit="${s.id}">Edit</button><button class="btn bad sm" data-del="${s.id}">Delete</button></div></div>`}
+
+function tt(){const d=new Date().getDay();
+ const opts=S.subjects.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join('');
+ return `<h1>Timetable</h1><p class="sub">Classes are never counted automatically. Mark each one as it happens.</p>
+ <div class="card"><h2>Today · ${DAYS[d]}</h2>${S.tt.filter(e=>e.day===d).length?S.tt.filter(e=>e.day===d).sort((a,b)=>a.start.localeCompare(b.start)).map(e=>classRow(e,today())).join(''):'<div class="empty">No classes today.</div>'}</div>
+ <div class="card"><h2>Add a class</h2>${S.subjects.length?`<div class="f"><div><label>Subject</label><select id="t_s">${opts}</select></div><div><label>Day</label><select id="t_d">${DAYS.map((x,i)=>`<option value="${i}" ${i===d?'selected':''}>${x}</option>`).join('')}</select></div><div><label>Start</label><input type="time" id="t_a" value="09:00"></div><div><label>End</label><input type="time" id="t_b" value="10:00"></div><div><label>Room</label><input id="t_r"></div></div><div id="terr" class="err"></div><button class="btn" id="tadd">Add to timetable</button>`:'<div class="empty">Add a subject first.</div>'}</div>
+ <div class="card"><h2>Week</h2>${S.tt.length?[1,2,3,4,5,6,0].map(i=>{const l=S.tt.filter(e=>e.day===i).sort((a,b)=>a.start.localeCompare(b.start));return l.length?`<div style="margin-bottom:10px"><b>${DAYS[i]}</b>${l.map(e=>{const s=S.subjects.find(x=>x.id===e.subj);return`<div class="row sp mut"><span>${e.start}–${e.end} · ${esc(s?.name)} ${esc(e.room)}</span><button class="btn bad sm" data-dtt="${e.id}" aria-label="Remove class">Remove</button></div>`}).join('')}</div>`:''}).join(''):'<div class="empty">Your week is empty.</div>'}</div>`}
+
+function tasks(){const TY=['Assignment','Test','Presentation','Exam'];
+ const l=[...S.tasks].sort((a,b)=>a.done-b.done||a.due.localeCompare(b.due));
+ return `<h1>Deadlines</h1><p class="sub">Assignments, tests and exams in one list.</p>
+ <div class="card"><div class="f"><div><label>Title</label><input id="k_t"></div><div><label>Type</label><select id="k_y">${TY.map(x=>`<option>${x}</option>`).join('')}</select></div><div><label>Due date</label><input type="date" id="k_d" value="${today()}"></div></div><div id="kerr" class="err"></div><button class="btn" id="kadd">Add deadline</button></div>
+ <div class="card">${l.length?l.map(t=>{const od=!t.done&&t.due<today();return`<div class="row sp" style="margin-bottom:6px"><label style="display:flex;gap:8px;align-items:center;color:var(--ink);${t.done?'text-decoration:line-through;opacity:.6':''}"><input type="checkbox" style="width:auto" data-tk="${t.id}" ${t.done?'checked':''}>${esc(t.title)} <span class="mut">${esc(t.type)}</span></label><span class="${od?'err':'mut'}">${esc(t.due)}${od?' · overdue':''} <button class="btn bad sm" data-dk="${t.id}" aria-label="Delete">✕</button></span></div>`}).join(''):'<div class="empty">No deadlines. Add one above.</div>'}</div>`}
+
+function settings(){const p=S.policy;
+ return `<h1>Settings</h1><p class="sub">Your data stays in this browser. Nothing is sent to a server.</p>
+ <div class="card"><h2>Attendance policy</h2><div class="f"><div><label>Default mandatory %</label><input type="number" id="p_o" min="0" max="100" value="${p.overall}"></div>
+ <div><label>Policy applies</label><select id="p_m">${[['subject','Per subject'],['overall','Overall'],['both','Both']].map(([k,l])=>`<option value="${k}" ${p.mode===k?'selected':''}>${l}</option>`).join('')}</select></div>
+ <div><label>Yellow at ≤ absences left</label><input type="number" id="p_y" min="0" value="${p.yellow}"></div><div><label>Orange at ≤ absences left</label><input type="number" id="p_r" min="0" value="${p.orange}"></div>
+ <div><label>Stale after (days)</label><input type="number" id="p_s" min="1" value="${p.stale}"></div></div><button class="btn" id="psave">Save policy</button></div>
+ <div class="card"><h2>Appearance and data</h2><div class="row"><button class="btn alt" id="th">Toggle light/dark</button><button class="btn alt" id="demo">Load demo data</button><button class="btn bad" id="wipe">Erase all data</button></div></div>`}
+
+/* ---- actions ---- */
+function setMark(id,date,k){const e=S.tt.find(x=>x.id===id),s=S.subjects.find(x=>x.id===e.subj);if(!s)return;const key=id+date,prev=S.log[key];
+ if(prev===k)return;
+ if(prev==='a'){s.att--;s.tot--}else if(prev==='m')s.tot--;
+ if(k==='a'){s.att++;s.tot++}else if(k==='m')s.tot++;
+ S.log[key]=k;s.updated=Date.now();save();render()}
+function demo(){const n=Date.now();S.subjects=[{id:'s1',name:'Business Economics',code:'BE101',att:30,tot:45,target:75,credits:4},{id:'s2',name:'Financial Accounting',code:'FA102',att:36,tot:45,target:75,credits:4},{id:'s3',name:'Marketing Basics',code:'MK103',att:44,tot:45,target:75,credits:3}].map(s=>({...s,faculty:'',updated:n}));
+ S.tt=[1,2,3,4,5].flatMap((d,i)=>[{id:'t'+d+'a',subj:S.subjects[i%3].id,day:d,start:'09:00',end:'10:00',room:'A'+(100+d)},{id:'t'+d+'b',subj:S.subjects[(i+1)%3].id,day:d,start:'11:00',end:'12:00',room:'B20'+d}]);
+ const dd=x=>new Date(Date.now()+x*864e5).toISOString().slice(0,10);
+ S.tasks=[{id:'k1',title:'Economics assignment 2',type:'Assignment',due:dd(3),done:false},{id:'k2',title:'Accounting mid-term',type:'Test',due:dd(9),done:false}];S.log={};save();render();toast('Demo data loaded')}
+function toCSV(){const q=v=>'"'+String(v??'').replace(/"/g,'""')+'"';return['name,code,faculty,attended,total,target,credits',...S.subjects.map(s=>[s.name,s.code,s.faculty,s.att,s.tot,s.target,s.credits].map(q).join(','))].join('\n')}
+function parseCSV(t){const rows=[];let r=[],c='',qd=false;for(let i=0;i<t.length;i++){const ch=t[i];if(qd){if(ch==='"'&&t[i+1]==='"'){c+='"';i++}else if(ch==='"')qd=false;else c+=ch}else if(ch==='"')qd=true;else if(ch===','){r.push(c);c=''}else if(ch==='\n'||ch==='\r'){if(ch==='\r'&&t[i+1]==='\n')i++;r.push(c);c='';rows.push(r);r=[]}else c+=ch}if(c||r.length){r.push(c);rows.push(r)}return rows.filter(x=>x.some(y=>y!==''))}
+function bind(){const q=(s,f)=>document.querySelectorAll(s).forEach(f);
+ q('[data-go]',b=>b.onclick=()=>{view=b.dataset.go;editId='';render()});
+ q('#demo',b=>b.onclick=demo);
+ q('[data-mark]',b=>b.onclick=()=>{const[i,d,k]=b.dataset.mark.split('|');setMark(i,d,k)});
+ q('[data-sel]',b=>b.onclick=()=>{sel=sel===b.dataset.sel?null:b.dataset.sel;render()});
+ q('#add',b=>b.onclick=()=>{editId='';render()});
+ q('[data-edit]',b=>b.onclick=()=>{editId=b.dataset.edit;render()});
+ q('[data-del]',b=>b.onclick=()=>{if(confirm('Delete this subject and its timetable entries?')){const id=b.dataset.del;S.subjects=S.subjects.filter(s=>s.id!==id);S.tt=S.tt.filter(e=>e.subj!==id);sel=null;save();render()}});
+ q('#fcancel',b=>b.onclick=()=>{editId=null;render()});
+ q('#fsave',b=>b.onclick=()=>{const v=id=>$('#'+id).value.trim(),name=v('f_name');const A=+v('f_att'),T=+v('f_tot'),P=+v('f_tg');const c=calc(A,T,P);
+  if(!name)return $('#ferr').textContent='Enter a subject name.';if(c.error)return $('#ferr').textContent=c.error;
+  const o=S.subjects.find(x=>x.id===editId)||{id:uid()};Object.assign(o,{name,code:v('f_code'),faculty:v('f_fac'),att:A,tot:T,target:P,credits:v('f_cr'),updated:Date.now()});if(!S.subjects.includes(o))S.subjects.push(o);editId=null;save();render();toast('Subject saved')});
+ const sm=$('#sm'),sa=$('#sa');if(sm){const s=S.subjects.find(x=>x.id===sel);const u=()=>{s.sim={m:Math.max(0,+sm.value||0),a:Math.max(0,+sa.value||0)};save();const p=sm.selectionStart;render();const e=document.activeElement}; sm.onchange=u;sa.onchange=u}
+ q('#tadd',b=>b.onclick=()=>{const a=$('#t_a').value,e=$('#t_b').value;if(!a||!e||e<=a)return $('#terr').textContent='End time must be after start time.';S.tt.push({id:uid(),subj:$('#t_s').value,day:+$('#t_d').value,start:a,end:e,room:$('#t_r').value.trim()});save();render()});
+ q('[data-dtt]',b=>b.onclick=()=>{S.tt=S.tt.filter(e=>e.id!==b.dataset.dtt);save();render()});
+ q('#kadd',b=>b.onclick=()=>{const t=$('#k_t').value.trim();if(!t||!$('#k_d').value)return $('#kerr').textContent='Enter a title and a due date.';S.tasks.push({id:uid(),title:t,type:$('#k_y').value,due:$('#k_d').value,done:false});save();render()});
+ q('[data-tk]',b=>b.onchange=()=>{const t=S.tasks.find(x=>x.id===b.dataset.tk);t.done=b.checked;save();render()});
+ q('[data-dk]',b=>b.onclick=()=>{S.tasks=S.tasks.filter(x=>x.id!==b.dataset.dk);save();render()});
+ q('#psave',b=>b.onclick=()=>{const g=id=>+$('#'+id).value;if(g('p_o')<0||g('p_o')>100)return toast('Mandatory % must be 0 to 100.');S.policy={overall:g('p_o'),mode:$('#p_m').value,yellow:g('p_y'),orange:Math.min(g('p_r'),g('p_y')),stale:g('p_s')||7};save();toast('Policy saved');render()});
+ q('#th',b=>b.onclick=()=>{const dark=document.documentElement.dataset.theme==='dark'||(!S.theme&&matchMedia('(prefers-color-scheme:dark)').matches);S.theme=dark?'light':'dark';save();render()});
+ q('#wipe',b=>b.onclick=()=>{if(confirm('Erase all CampusConnect data in this browser?')){localStorage.removeItem('cc');load();view='dash';render()}});
+ q('#exp',b=>b.onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([toCSV()],{type:'text/csv'}));a.download='attendance.csv';a.click()});
+ q('#imp',b=>b.onclick=()=>$('#file').click());
+ q('#file',f=>f.onchange=()=>{const r=new FileReader();r.onerror=()=>toast('Could not read that file.');r.onload=()=>{const rows=parseCSV(String(r.result)).slice(1);let n=0,bad=0;rows.forEach(x=>{const[name,code,faculty,A,T,P,cr]=x;const c=calc(A,T,P);if(!name||c.error){bad++;return}S.subjects.push({id:uid(),name,code,faculty,att:+A,tot:+T,target:+P,credits:cr,updated:Date.now()});n++});save();render();toast(`Imported ${n} subject(s)${bad?`, skipped ${bad} invalid row(s)`:''}`)};r.readAsText(f.files[0])})}
+load();render();
+</script></body></html>
